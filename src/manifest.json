@@ -14,7 +14,7 @@
       //"38": "images/icon38.png"            // optional
     },
     "default_title": "UnBiased Media",      // optional; shown in tooltip
-    "default_popup": "popup.html"        // optional
+    "default_popup": "unbiasedmedia.html"        // optional
   },
 
   "background": {
