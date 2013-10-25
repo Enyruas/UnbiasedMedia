@@ -1,0 +1,28 @@
+{
+  // Required
+  "manifest_version": 2,
+  "name": "UnBiased Media",
+  "version": "0.0.1",
+
+  // Recommended
+  "description": "Get different point of views to what you are reading",
+  "icons": {},
+
+  "page_action": {
+    "default_icon": {                    // optional
+      "19": "icon19.png"          // optional
+      //"38": "images/icon38.png"            // optional
+    },
+    "default_title": "UnBiased Media",      // optional; shown in tooltip
+    "default_popup": "popup.html"        // optional
+  },
+
+  "background": {
+    "persistent": false,
+    "scripts": ["background.js"]
+  },
+
+  "permissions" : [
+    "tabs"
+  ]
+}
