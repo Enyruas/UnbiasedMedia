@@ -1,0 +1,22 @@
+body {
+    min-width: 357px;
+    overflow-x: hidden;
+    font-family: Tahoma, Geneva, sans-serif;
+    font-size: 100%;
+    line-height: 130%;
+}
+
+h1   {color:maroon;font-size:20pt;}
+hr   {color:navy;}
+p    {font-size:11pt;margin-left:15px;}
+a:link    {color:green;}
+a:hover   {color:black;}
+a:active  {color:blue;} 
+
+img {
+    margin: 5px;
+    border: 2px solid black;
+    vertical-align: middle;
+    width: 75px;
+     height: 75px;
+}
