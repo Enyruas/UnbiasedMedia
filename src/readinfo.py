@@ -4,45 +4,54 @@ import json
 from flask import Flask, request, jsonify, make_response, current_app
 from datetime import timedelta
 from functools import update_wrapper
+import urlparse
+import pprint
 
 
 app = Flask(__name__)
-app.config['DEBUG'] = True
+app.config['DEBUG'] = False
 
 redis = Redis()
 
 GoogleUrlPrefix = 'https://www.googleapis.com/customsearch/v1?'
-GoogleUrlForm = {
-    'key': 'AIzaSyDmMN9iB9u-z3AC7_ZXNceoX9D9BwePgIU',
-    'cx': '018046081118850151085:cbm9iuhwzdw',
-    'q': 'nuclear',
+GoogleApiKey = 'AIzaSyCPrpOFnIgnuhIxXLlUEP15byGxDbiZfVg'
+
+GoogleCustomSearchEngines = {
+    "Middle East": "018046081118850151085:cbm9iuhwzdw",
+    "UK": "018046081118850151085:24ksw1zqgb0",
+    "US": "018046081118850151085:dz8so1o-kak",
+    "Australasia": "018046081118850151085:x7v6hx0se4e",
+    "Asia": "018046081118850151085:o3ha9ycr66e",
+    "Independent": "018046081118850151085:qil41rktfky",
+    "Europe": "018046081118850151085:azqircsm6pa",
+    "Russia": "018046081118850151085:xgki0qczcg8"
 }
 
 
-def googleRequest(keyword):
-    GoogleUrlForm['q'] = keyword
+def googleRequest(keyword, cse, original_url):
+    GoogleUrlForm = {
+        "key": GoogleApiKey,
+        "q": keyword,
+        "cx": cse,
+        #"dateRestrict": "m1",
+        "siteSearchFilter": "e",
+        "siteSearch": original_url
+    }
     url = GoogleUrlPrefix + '&'.join(["%s=%s" % (k, v) for k, v in GoogleUrlForm.items()])
     return url
 
 
-def query_google(keyword):
-    url = googleRequest(keyword)
-    res = requests.get(url)
-    text = res.json()
-    return text
+def query_google(keyword, original_url):
+    all_results = {}
+    for area, cse in GoogleCustomSearchEngines.iteritems():
+        url = googleRequest(keyword, cse, original_url)
+        res = requests.get(url)
+        pprint.pprint(res.json())
+        if int(res.json()["searchInformation"]["totalResults"]) > 0:
+            first_result = res.json()["items"][0]
+            all_results[area] = first_result
 
-
-def add_related_media(keyword, media_title, media_url):
-    redis.zadd(
-        keyword,
-        json.dumps({"url": media_url, "title": media_title}),
-        0
-    )
-    redis.hset(
-        "url_keyword_map",
-        media_url,
-        keyword
-    )
+    return all_results
 
 
 def crossdomain(origin=None, methods=None, headers=None,
@@ -87,6 +96,19 @@ def crossdomain(origin=None, methods=None, headers=None,
     return decorator
 
 
+def add_related_media(keyword, media_title, media_url, media_display, media_area):
+    redis.zadd(
+        keyword,
+        json.dumps({"url": media_url, "title": media_title, "display": media_display, "area": media_area}),
+        0
+    )
+    redis.hset(
+        "url_keyword_map",
+        media_url,
+        keyword
+    )
+
+
 def clean_title(q):
     # Kick out all domains
     words = q.split()
@@ -120,14 +142,14 @@ def query():
     if not keyword:
         keyword = q
         print "querying google"
-        google_results = query_google(keyword)
+        google_results = query_google(keyword, urlparse.urlparse(url).hostname)
         redis.hset("url_keyword_map", url, keyword)
-        for item in google_results["items"]:
-            add_related_media(keyword, item["title"], item["link"])
+        for area, item in google_results.iteritems():
+            add_related_media(keyword, item["title"], item["link"], item["displayLink"], area)
 
     all_items = redis.zrevrangebyscore(keyword, "+inf", "-inf")
     return jsonify(results=[json.loads(s) for s in all_items])
 
 
 if __name__ == '__main__':
-    app.run(port=80)
+    app.run(host='0.0.0.0', port=80)

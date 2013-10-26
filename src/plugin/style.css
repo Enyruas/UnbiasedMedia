@@ -1,0 +1,30 @@
+body {
+    padding: 4px;
+}
+
+h6 {
+    float: right;
+}
+
+h2 {
+    margin-top: 10px;
+}
+
+#related-news {
+    display: table;
+}
+
+.opinionLink {
+    display: table-cell;
+    text-align: right;
+}
+
+.newsentry {
+    display: table-row;
+}
+
+.btn-discard {
+    margin: 2px;
+    margin-left: 9px;
+    display: table-cell;
+}
