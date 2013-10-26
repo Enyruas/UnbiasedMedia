@@ -18,11 +18,12 @@
   },
 
   "background": {
-    "persistent": false,
+    "persistent": true,
     "scripts": ["background.js"]
   },
 
   "permissions" : [
+    "storage",
     "tabs"
   ]
 }
